@@ -163,7 +163,6 @@ int main()
 	int ticks = 1;
 	bool waiting = true;
 	while(1) {
-		int state1 = 0;
 		currentTime = clock();
 		time_counter += (double)(currentTime - prevTime);
 		prevTime = currentTime;
@@ -173,34 +172,37 @@ int main()
 			waiting = true;
 		}
 		int pushed = zed->PushButtonGet(oneOn, twoOn, threeOn, fourOn, fiveOn);
-		if(pushed != 0) {
-				state1 = pushed;
-			}
-		if(time_counter > (double)(1000000 / ticks)) {
-			time_counter -= (double)(1000000 / ticks);
-			cout << value << endl;
-			if(state1 == 4) {
-					speed -= 1;
-					if(speed <= 0) {
-						speed = 0;
-					}
-					fourOn = (fourOn + 1) % 2;
-					continue;
-			}
-			if(state1 == 3) {
-					speed += 1;
-					threeOn = (threeOn + 1) % 2;
-					waiting = false;
-					continue;
-			}
-			if(state1 == 5) {
+		switch (pushed) {
+			case 0:
+				break;
+			case 1:
+				state = 1;
+				break;
+			case 2:
+				state = 2;
+				break;
+			case 3:
+				speed += 1;
+				threeOn = (threeOn + 1) % 2;
+				waiting = false;
+				break;
+			case 4:
+				speed -= 1;
+				if(speed <= 0) {
+					speed = 0;
+				}
+				fourOn = (fourOn + 1) % 2;
+				break;
+			case 5:
 				if (zed->RegisterRead(gpio_pbtnc_offset) == 1) {
 					value = zed->readSwitches();
 					zed->SetLedNumber(value);
 				}
 				fiveOn = (fiveOn + 1) % 2;
-				continue;
-			}
+		}
+		if(time_counter > (double)(1000000 / ticks)) {
+			time_counter -= (double)(1000000 / ticks);
+			cout << value << endl;
 			state = state1;
 			if(waiting) {
 				state = 0;
@@ -209,12 +211,10 @@ int main()
 				case 2:
 					value = value + 1;
 					zed->SetLedNumber(value);
-					twoOn = (twoOn + 1) % 2;
 					break;
 				case 1:
 					value = value - 1;
 					zed->SetLedNumber(value);
-					oneOn = (oneOn + 1) % 2;
 					break;
 				default:
 					break;
@@ -223,10 +223,3 @@ int main()
 	}
 	delete &zed;
 }
-
-echo "# lab3" >> README.md
-git init
-git add README.md
-git commit -m "first commit"
-git remote add origin https://github.com/Hulnis/lab3.git
-git push -u origin master
